@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import pymc3 as pm3
 from tqdm import tqdm
 import tikzplotlib
+
+# This is outdated and should not be used for analysis, mostly just here for reference. Shouldn't go in public available version.
 
 seeds = 100
 Runs = 100
@@ -11,7 +12,7 @@ burnin = 100
 Scaling = 0.01
 samples = 100
 AGTestCap = 10000# (70% of infected, 30% of susceptible)
-ABTestCap = 500000
+ABTestCap = 10000
 InitPop = 6.7e7
 GlobalDeaths = pd.read_csv("time_series_covid19_deaths_global.csv")
 UKDeaths = GlobalDeaths.iloc[223].values[4:]
@@ -138,9 +139,9 @@ def GenCases(PriorBounds,Runs,ABTestCap,AGTestCap,InitPerc,SISplit=[0,1],TestInt
         PRecoveries = np.random.binomial(SIRD[:, t-1, 2], gamma, Runs)
 
         SIRD0[:, 0, 0] = np.max(([0]*Runs,SIRD[:, t-1, 0] - BFalsePos + GFalsePos),0) # Q_S
-        SIRD0[:, 0, 1] = SIRD[:, t-1, 1] + BFalsePos - GFalsePos - IInfections - QIInfections# S
+        SIRD0[:, 0, 1] = SIRD[:, t-1, 1] + BFalsePos - GFalsePos - IInfections - QIInfections # S
         SIRD0[:, 0, 2] = SIRD[:, t-1, 2] + GTruePos - PRecoveries # Q_I
-        SIRD0[:, 0, 3] = SIRD[:, t-1, 3] + IInfections +QIInfections - GTruePos - IRecoveries # I
+        SIRD0[:, 0, 3] = SIRD[:, t-1, 3] + IInfections + QIInfections - GTruePos - IRecoveries # I
         SIRD0[:, 0, 4] = SIRD[:, t-1, 4] - BTruePos # Q_R
         SIRD0[:, 0, 5] = SIRD[:, t-1, 5] + IRecoveries + PRecoveries + BTruePos #R
         change = SIRD0-SIRD[:,t-1,:]
@@ -181,10 +182,10 @@ ax[3].set_xlabel('Q_I')
 ax[4].set_xlabel('R')
 plt.subplots_adjust(wspace = .001)
 fig.suptitle('Red(tau = 0) Blue(tau = 1)')
-"""
 
 
-"""
+
+
 PriorBounds = np.array([
                 [1, 1],     #phi
                 [0.9, 0.9],     #tauB
@@ -195,8 +196,6 @@ PriorBounds = np.array([
                 [0.1, 0.1],   #gamma
                 [0.32, 0.32]     #beta
                 ])
-                """
-"""     
 [fig,ax] = plt.subplots(2,2)
 Bounds = np.copy(PriorBounds)
 Rez = 4
@@ -206,12 +205,16 @@ for k, SigmaG in enumerate([0.5, 0.75, 0.9, 0.98]):
     Bounds[2,:] = [1, 1]
     Prevalence = 0.001
     InitPerc = [0.951*(1-Prevalence),0.034,0.004,0.01,0.951*(Prevalence),0.001]
-    [SIRD, t] = GenCases(Bounds, Runs, 1e14, 1e5, InitPerc, length = 100)
+    [SIRD, t] = GenCases(Bounds, 1, 1e14, 1e5, InitPerc, length = 100)
     ax[1,0].plot(range(0,t),np.sum(SIRD[0, :, [1,3,5]],0)/InitPop)
     ax[0,0].plot(range(0,t),np.sum(SIRD[0, :, [2,3]],0)/1e6, label = r'$\sigma_G={:.2f}$'.format(SigmaG))
+    ax[0,0].plot(range(0,t),np.sum(SIRD[0, :, [0,1]],0)/1e6, label = r'$\sigma_G={:.2f}$'.format(SigmaG))
+    Prevalence = 0.001
+    ax[0,0].plot(range(0,t),np.sum(SIRD[0, :, [4,5]],0)/1e6, label = r'$\sigma_G={:.2f}$'.format(SigmaG))
+    Prevalence = 0.001
     Prevalence = 0.001
     InitPerc = [0.951*(1-Prevalence),0.034,0.004,0.01,0.951*(Prevalence),0.001]
-    [SIRD, t] = GenCases(Bounds, Runs, 1e14, 1.5e5, InitPerc, length = 100)
+    [SIRD, t] = GenCases(Bounds, 1, 1e14, 1.5e5, InitPerc, length = 100)
     ax[1,1].plot(range(0,t),np.sum(SIRD[0, :, [1,3,5]],0)/InitPop)
     ax[0,1].plot(range(0,t),np.sum(SIRD[0, :, [2,3]],0)/1e6)
 ax[1,0].set_xlabel('Days - 1e5 TestCap')
@@ -219,9 +222,9 @@ ax[1,1].set_xlabel('Days - 1.5e5 TestCap')
 plt.subplots_adjust(hspace = .001)
 legend = fig.legend()
 #fig.suptitle('Red(sigma = 0.5) Blue(sigma = 0.98)')
-tikzplotlib.save('Diffcap1e6.tikz')
-"""
-"""
+#tikzplotlib.save('Diffcap1e6.tikz')
+
+
 [fig,ax] = plt.subplots(2,1)
 Bounds = np.copy(PriorBounds)
 Bounds[1, :] = [0, 0]
@@ -242,7 +245,7 @@ plt.subplots_adjust(hspace = .001)
 #fig.suptitle('Variable Antigen Test Capacities')
 plt.legend()
 tikzplotlib.save('AGTestEff.tikz')
-"""
+
 
 [fig,ax] = plt.subplots(2,4,sharey='row')
 Rez = 6
@@ -264,6 +267,7 @@ for k, Prevalence in enumerate([0.001, 0.003,  0.01, 0.1, 0.25, 0.5]):
 plt.subplots_adjust(hspace = .001, wspace = .001)
 legend = fig.legend()
 tikzplotlib.save('PrevSpec1e6.tikz')
+
 """
 [fig,ax] = plt.subplots(2,4,sharey='row')
 Rez = 6
@@ -282,8 +286,8 @@ for k, Prevalence in enumerate([0.001, 0.003, 0.01, 0.1, 0.25, 0.5]):
             ax[1,i].set_xlabel(r'$\sigma_B={:.2f}$'.format(sigmaABi))
 plt.subplots_adjust(hspace = .001, wspace = .001)
 legend = fig.legend()
-tikzplotlib.save('PrevSens1e6.tikz') 
-
+#tikzplotlib.save('PrevSens1e6.tikz') 
+"""
 # Certain number of population leaving every day
 [figtau,axtau] = plt.subplots(1,4,sharey='row')
 plt.subplots_adjust(hspace = .001, wspace = .001)
@@ -292,11 +296,11 @@ plt.subplots_adjust(hspace = .001, wspace = .001)
 
 [figCap,axCap] = plt.subplots(3,5,sharey='row')
 plt.subplots_adjust(hspace = .001, wspace = .001)
-"""
+
 
 [figsplit,axsplit] = plt.subplots(3,5,sharey='row', sharex = 'col')
 plt.subplots_adjust(hspace = .001, wspace = .001)
-"""
+
 Rez = 2
 for k, Leaving in enumerate([0.01, 0.05, 0.1]):
     for i, TPrevalence in enumerate([0.05, 0.1, 0.2, 0.5, 0.7, 0.95]):
@@ -313,9 +317,9 @@ for k, Leaving in enumerate([0.01, 0.05, 0.1]):
                             0.7,
                             0.7,
                             0.7,
-                            1], zorder = 1)"""
-for k, Leaving in enumerate([0.01, 0.03, 0.04]):
-    """
+                            1], zorder = 1)
+#for k, Leaving in enumerate([0.01, 0.03, 0.04]):
+    
     for i, taui in enumerate([0.7,0.8,0.9]):
         Bounds = np.copy(PriorBounds)
         Bounds[1,:] = [0,0]
@@ -370,7 +374,7 @@ for k, Leaving in enumerate([0.01, 0.03, 0.04]):
                             0,
                             (k/Rez)*shade,
                             1])
-     """            
+                 
     iRez = 6
     for i, TPrevalence in enumerate([0.05, 0.1, 0.2, 0.3, 0.5, 0.7]):
         for j, Cap in enumerate([0, 5e4, 8e4, 1e5, 1.2e5]):
@@ -397,7 +401,7 @@ for k, Leaving in enumerate([0.01, 0.03, 0.04]):
                                 0,
                                 (i/iRez),
                                 1], zorder = 2)
-            """for ki in range(0,3):
+            for ki in range(0,3):
                 if ki != k:
                     axsplit[ki, j].plot(np.arange(0,t,3),np.sum(SIRD[0, 0::3, [2,3]],0)/1e6,
                         color = [
@@ -411,22 +415,22 @@ for k, Leaving in enumerate([0.01, 0.03, 0.04]):
                             ((iRez-i)/iRez),
                             0,
                             (i/iRez),
-                            1], zorder = 2)"""
+                            1], zorder = 2
             
             if k == 2:
                 axsplit[k, j].set_xlabel(r'$Cap.={:.2e}$'.format(Cap))
     axsplit[k, 0].set_ylabel(r'$Rate = {:.2f}$'.format(Leaving))
 axsplit[2, 0].set_xlabel(r'No Testing')
 plt.subplots_adjust(hspace = .001, wspace = .001)
-"""
+
 legend = figtau.legend()
 legend = figsig.legend()
 legend = figCap.legend()
-"""
+
 tikzplotlib.save('CapSens1e6.tikz') 
 legend = figsplit.legend()
 #tikzplotlib.save('PrevSens.tikz') 
-"""
+
 
 [fig,ax] = plt.subplots(1,5)
 Bounds = np.copy(PriorBounds)
