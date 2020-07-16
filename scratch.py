@@ -28,6 +28,7 @@ if DiffSens1e6:
         ax[0,1].plot(np.linspace(0, len(Pop['Infectious'][0,:]), len(Pop['Infectious'][0,:])), np.sum((Pop['Infectious'][0,:], Pop['Q_Infectious'][0,:]), 0)/1e6, color = [(3-i)/3,0,i/3])
         ax[1,1].plot(np.linspace(0, len(Pop['Infectious'][0,:]), len(Pop['Infectious'][0,:])), np.sum((Pop['Infectious'][0,:], Pop['Susceptible'][0,:], Pop['Recovered'][0,:]), 0)/PopSize, label = r'$\sigma_G={:.2f}$'.format(i), color = [(3-i)/3,0,i/3])
     plt.subplots_adjust(hspace = .001, wspace = .001)
+    plt.legend()
 
 if PrevSens1e6:
     QTest.Def_Inf_Test(0.9, 0.9, 0, 0, 1)
@@ -73,4 +74,5 @@ if CapSens1e6:
         ax[2,i].set_xlabel(r'$Cap.={:.2e}$'.format(Cap))
     ax[2,0].set_xlabel(r'No Testing')
     plt.subplots_adjust(hspace = .001, wspace = .001)
+    plt.legend()
 plt.show()
