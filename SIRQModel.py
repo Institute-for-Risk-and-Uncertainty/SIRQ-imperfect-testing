@@ -11,7 +11,7 @@ class SIRQ():
         self.Inf_Test = Inf_Test
         self.Anti_Test = Anti_Test
         self.Population = Population
-    
+
     def Def_Anti_Test(
         self,
         Sensitivity,
