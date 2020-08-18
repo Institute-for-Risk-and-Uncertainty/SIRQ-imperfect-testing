@@ -10,9 +10,9 @@ PopSize = 6.7e7
 Beta = 0.32
 gamma = 0.1
 
-DiffSens1e6 = False
-PrevSens1e6 = False
-PrevSpec1e6 = False
+DiffSens1e6 = True
+PrevSens1e6 = True
+PrevSpec1e6 = True
 CapSens1e6 = True
 
 if DiffSens1e6:
@@ -116,7 +116,7 @@ if CapSens1e6:
         for k, Rate in enumerate([0.01, 0.05, 0.1]):
             for j, Targ in enumerate([0.05, 0.1, 0.2, 0.3, 0.5, 0.7]):
                 QTest.Def_Inf_Test(0.9, 0.9, int(Cap), Targ, 1)
-                QTest.Def_Anti_Test(1, 0, int(Rate*PopSize), 0.8, 7)
+                QTest.Def_Anti_Test(1, 0, int(Rate*PopSize), 0, 7)
                 QTest.Def_Population(0.034*PopSize, 0.01*PopSize, 0.001*PopSize, 0.95*PopSize, 0.004*PopSize, 0.001*PopSize)
                 Pop = QTest.Run(0.32, 0.1, Length = 365)
                 ax[k, i].plot(np.arange(365), np.sum((Pop['Infectious'][0,:], Pop['Q_Infectious'][0,:]), 0)/1e6, label = r'$T_A={:.3f}$'.format(Targ), zorder = 100, color = [(5-j)/5,0,j/5])

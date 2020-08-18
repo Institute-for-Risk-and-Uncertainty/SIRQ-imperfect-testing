@@ -112,8 +112,7 @@ class SIRQ():
                                     Inf_Test['Targeting'] -
                                     Population['Infectious'][:, -1]
                                 )), 0
-                            )),
-                            0).astype(int)
+                            )), 0).astype(int)
                     else:
                         Mistargeted_Exposed = np.min((
                             Population['Susceptible'][:, -1],
@@ -123,10 +122,8 @@ class SIRQ():
                                     Population['Infectious'][:, -1] /
                                     Inf_Test['Targeting'] -
                                     Population['Infectious'][:, -1]
-                                ),
-                                0
-                                )),
-                            0)).astype(int)
+                                )), 0
+                            )), 0).astype(int)
                 else:
                     Mistargeted_Exposed = Population['Susceptible'][:, -1]
 
